@@ -6,6 +6,7 @@ import { DollarSign, Users, CreditCard, Activity } from "lucide-react";
 import Card, { CardContent, CardProps } from "@/components/Card";
 import BarChart from "@/components/BarChart";
 import SalesCard, { SalesProps } from "@/components/SalesCard";
+import LoginPage from "./Login/page";
 
 const cardData: CardProps[] = [
   {
@@ -64,7 +65,7 @@ const uesrSalesData: SalesProps[] = [
 
 export default function Home() {
   return (
-    <div className="flex flex-col gap-5  w-full">
+    <><LoginPage /><div className="flex flex-col gap-5  w-full">
       <PageTitle title="Dashboard" />
       <section className="grid w-full grid-cols-1 gap-4 gap-x-8 transition-all sm:grid-cols-2 xl:grid-cols-4">
         {cardData.map((d, i) => (
@@ -73,8 +74,7 @@ export default function Home() {
             amount={d.amount}
             discription={d.discription}
             icon={d.icon}
-            label={d.label}
-          />
+            label={d.label} />
         ))}
       </section>
       <section className="grid grid-cols-1  gap-4 transition-all lg:grid-cols-2">
@@ -95,13 +95,12 @@ export default function Home() {
               key={i}
               email={d.email}
               name={d.name}
-              saleAmount={d.saleAmount}
-            />
+              saleAmount={d.saleAmount} />
           ))}
         </CardContent>
 
         {/*  */}
       </section>
-    </div>
+    </div></>
   );
 }

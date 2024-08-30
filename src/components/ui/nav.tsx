@@ -51,7 +51,7 @@ export function Nav({ links, isCollapsed }: NavProps) {
                         "dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted dark:hover:text-white"
                     )}
                   >
-                    <link.icon className="h-4 w-4" />
+                    
                     <span className="sr-only">{link.title}</span>
                   </Link>
                 </TooltipTrigger>

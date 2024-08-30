@@ -1,8 +1,9 @@
 
 import React from 'react';
+import LoginPage from './Login/page';
 
 const HomePage = () => {
-  return <div>Welcome to the Home Page</div>;
+  return <LoginPage></LoginPage>;
 };
 
 export default HomePage;

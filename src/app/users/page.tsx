@@ -169,14 +169,14 @@ type User = {
   username: string;
   email: string;
   role: string;
-  lastLogin: string;
+  
   modepasses: string; // Example of historical information
 };
 
 // Sample initial data
 const initialData: User[] = [
-  { id: 1, username: "admin", email: "admin@example.com", role: "Admin", lastLogin: "2024-08-20", modepasses: "Passed: 10, Failed: 2" },
-  { id: 2, username: "assistant", email: "assistant@example.com", role: "Assistant", lastLogin: "2024-08-19", modepasses: "Passed: 5, Failed: 1" },
+  { id: 1, username: "admin", email: "admin@example.com", role: "Admin", modepasses: "Passed: 10, Failed: 2" },
+  { id: 2, username: "assistant", email: "assistant@example.com", role: "Assistant",  modepasses: "Passed: 5, Failed: 1" },
   // Add more sample users here
 ];
 
@@ -198,14 +198,8 @@ export default function UsersComponent() {
       accessorKey: "role",
       header: "Role",
     },
-    {
-      accessorKey: "lastLogin",
-      header: "Last Login",
-    },
-    {
-      accessorKey: "modepasses",
-      header: "Modepasses",
-    },
+   
+    
     {
       id: "actions",
       header: "Actions",
@@ -233,7 +227,7 @@ export default function UsersComponent() {
 
   // Handle adding a new user
   const handleAddNew = () => {
-    setEditingUser({ id: 0, username: "", email: "", role: "Assistant", lastLogin: "", modepasses: "" });
+    setEditingUser({ id: 0, username: "", email: "", role: "Assistant", modepasses: "" });
   };
 
   // Handle editing an existing user
@@ -340,16 +334,7 @@ function EditForm({ user, onSave, onCancel }: EditFormProps) {
           {/* Add other roles if necessary */}
         </select>
       </div>
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700">Last Login</label>
-        <input
-          type="date"
-          name="lastLogin"
-          value={formData.lastLogin}
-          onChange={handleChange}
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-        />
-      </div>
+      
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700">Modepasses</label>
         <input

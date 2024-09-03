@@ -114,7 +114,6 @@ const LoginPage = () => {
       // Store the token in localStorage
       localStorage.setItem('token', token);
       loadMe(token);
-
       // Redirect to the dashboard
       router.push('/Home');
     } else {

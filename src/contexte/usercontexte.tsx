@@ -1,5 +1,5 @@
 import React from 'react'
-import { useState, ReactNode,useEffect } from 'react'
+import { useState, ReactNode} from 'react'
 import axios from 'axios';
 
 interface IUserContext {

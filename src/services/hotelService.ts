@@ -42,5 +42,5 @@ export const getHotelByName = async (hotelname: string): Promise<Hotel | null> =
     return response.data;
   } catch (error) {
     console.error("Error fetching hotel by name:", error);
-    return null; // Retourne null si l'hôtel n'est pas trouvé
+    return null; 
   }};

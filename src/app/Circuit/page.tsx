@@ -4,37 +4,88 @@ import React, { useState, useEffect } from "react";
 import PageTitle from "@/components/PageTitle";
 import { DataTable } from "@/components/DataTable";
 import { ColumnDef } from "@tanstack/react-table";
+import { getCircuits, updateCircuit, createCircuit, deleteCircuit, getCircuitByName } from "@/services/CircuitService";
+import axios from "axios";
 
 // Define the type for Circuit
 type Circuit = {
-  id: number;
+ 
   title: string;
   description: string;
   duration: string;
   location: string;
-  price: number;
+  price: string;
   season: string;
-  imageUrl: string;
+  imageUrl: string[];
 };
 
-// Initialize the Circuit data
-const initialData: Circuit[] = [
-  {
-    id: 13,
-    title: "Circuit Sud Tunisien",
-    description: "À la découverte de Tozeur et le Sahara de Témainé",
-    duration: "6 Jours/5 Nuits",
-    location: "Douz, Tunisie",
-    price: 1417,
-    season: "Hiver 2024",
-    imageUrl: "assets/images/images11.jpeg",
-  },
-  // Add more circuits if needed
-];
-
 export default function CircuitComponent() {
-  const [data, setData] = useState<Circuit[]>(initialData);
+  const [data, setData] = useState<Circuit[]>([]);
   const [editingCircuit, setEditingCircuit] = useState<Circuit | null>(null);
+
+  useEffect(() => {
+    loadCircuit();
+  }, []);
+
+  const loadCircuit = async () => {
+    try {
+      const response = await axios.get('http://localhost:3002/circuits'); // Adjust endpoint as necessary
+      setData(response.data);
+    } catch (error) {
+      console.error('Error loading circuits', error);
+    }
+  };
+console.log(data)
+const handleSave = async (circuit: Circuit) => {
+  
+    if (circuit.title) {
+      // Update existing hotel
+      await axios.put(`http://localhost:3002/circuits/${circuit.title}`, circuit);
+    } else {
+      // Add new hotel
+      await axios.post('http://localhost:3002/circuits', circuit);
+    }  
+    loadCircuit(); // Reload data after save
+    setEditingCircuit(null);
+  
+
+  
+
+};
+
+const handleAddNew = () => {
+  setEditingCircuit({
+  title: '',
+  description: '',
+  duration: '',
+  location: '',
+  price: '',
+  season: '',
+  imageUrl: [''],
+  });
+};
+
+const handleEdit = (circuit: Circuit) => {
+  setEditingCircuit(circuit);
+};
+const handleDelete = async (title: string) => {
+   
+  try {
+    // Supposons que vous ayez une fonction pour récupérer un hôtel par son nom
+    const circuit = await getCircuitByName(title);
+
+    if (circuit && circuit.title) {
+      // Suppression de l'hôtel via son ID
+      await deleteCircuit(title);
+      console.log("Circuit deleted successfully");
+      // Vous pouvez mettre à jour l'interface utilisateur ici, par exemple
+    } else {
+      console.log("Circuit not found");
+    }
+  } catch (error) {
+    console.error("Error deleting Circuit:", error);
+  }
+};
 
   const columns: ColumnDef<Circuit>[] = [
     {
@@ -71,7 +122,7 @@ export default function CircuitComponent() {
       id: "actions",
       header: "Actions",
       cell: ({ row }) => {
-        const { id } = row.original;
+        const { title } = row.original;
         return (
           <div className="flex gap-2">
             <button
@@ -82,7 +133,7 @@ export default function CircuitComponent() {
             </button>
             <button
               className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-              onClick={() => handleDelete(id)}
+              onClick={() => handleDelete(title)}
             >
               Delete
             </button>
@@ -92,44 +143,7 @@ export default function CircuitComponent() {
     },
   ];
 
-  const handleSave = (updatedCircuit: Circuit) => {
-    if (updatedCircuit.id) {
-      setData((prevData) =>
-        prevData.map((circuit) =>
-          circuit.id === updatedCircuit.id ? updatedCircuit : circuit
-        )
-      );
-    } else {
-      setData((prevData) => [
-        ...prevData,
-        { ...updatedCircuit, id: prevData.length + 1 },
-      ]);
-    }
-    setEditingCircuit(null);
-  };
-
-  const handleAddNew = () => {
-    setEditingCircuit({
-      id: 0,
-      title: "",
-      description: "",
-      duration: "",
-      location: "",
-      price: 0,
-      season: "",
-      imageUrl: "",
-    });
-  };
-
-  const handleEdit = (circuit: Circuit) => {
-    setEditingCircuit(circuit);
-  };
-
-  const handleDelete = (id: number) => {
-    setData((prevData) =>
-      prevData.filter((circuit) => circuit.id !== id)
-    );
-  };
+  
 
   return (
     <div className="flex flex-col gap-5 w-full">
@@ -175,6 +189,7 @@ function EditForm({ circuit, onSave, onCancel }: EditFormProps) {
 
   return (
     <form className="p-4 bg-gray-100 rounded-lg" onSubmit={handleSubmit}>
+      {/* Form fields */}
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700">Title</label>
         <input

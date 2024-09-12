@@ -5,15 +5,15 @@ import axios from "axios";
 interface Country {
   _id: string;
   name: string;
-  description: string;
+  image: string;
 }
 
 const AddCountryForm = () => {
   const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
+  const [image, setImage] = useState(""); // Corrected 'description' to 'image'
   const [countries, setCountries] = useState<Country[]>([]);
 
-  // Fonction pour récupérer les pays existants
+  // Fetch countries from the server
   const fetchCountries = async () => {
     try {
       const response = await axios.get("http://localhost:3002/Countries");
@@ -23,31 +23,31 @@ const AddCountryForm = () => {
     }
   };
 
-  // Appel de l'API pour récupérer les pays à chaque fois que le composant est monté
+  // Fetch countries when the component is mounted
   useEffect(() => {
     fetchCountries();
   }, []);
 
-  // Fonction pour ajouter un pays
+  // Add a country
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:3002/Countries", { name, description });
+      await axios.post("http://localhost:3002/Countries", { name, image });
       alert("Country added successfully");
-      setName("");
-      setDescription("");
-      fetchCountries(); // Rafraîchir la liste des pays
+      setName("");  // Clear the input fields
+      setImage("");
+      fetchCountries(); // Refresh the country list
     } catch (error) {
       console.error("Error adding country", error);
     }
   };
 
-  // Fonction pour supprimer un pays
+  // Delete a country
   const handleDelete = async (id: string) => {
     try {
       await axios.delete(`http://localhost:3002/Countries/${id}`);
       alert("Country deleted successfully");
-      fetchCountries(); // Rafraîchir la liste après suppression
+      fetchCountries(); // Refresh the country list after deletion
     } catch (error) {
       console.error("Error deleting country", error);
     }
@@ -72,17 +72,18 @@ const AddCountryForm = () => {
           />
         </div>
         <div className="mb-6">
-          <label htmlFor="description" className="block text-gray-700 text-sm font-bold mb-2">
-            Description:
+          <label htmlFor="image" className="block text-gray-700 text-sm font-bold mb-2">
+            Image URL:
           </label>
-          <textarea
-            id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+          <input
+            id="image"
+            type="text"
+            value={image} // Corrected from description to image
+            onChange={(e) => setImage(e.target.value)} // Corrected setDescription to setImage
             required
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            placeholder="Enter description"
-          ></textarea>
+            placeholder="Enter image URL"
+          />
         </div>
         <div className="flex items-center justify-center">
           <button
@@ -100,7 +101,7 @@ const AddCountryForm = () => {
           <li key={country._id} className="flex justify-between items-center border-b py-2">
             <div>
               <p className="text-lg font-semibold">{country.name}</p>
-              <p className="text-gray-600">{country.description}</p>
+              <p className="text-gray-600">{country.image}</p>
             </div>
             <button
               onClick={() => handleDelete(country._id)}

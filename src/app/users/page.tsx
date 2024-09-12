@@ -1,380 +1,219 @@
-// /**
-//  * eslint-disable @next/next/no-img-element
-//  *
-//  * @format
-//  */
-
-// /** @format */
-// "use client";
-
-// import { DataTable } from "@/components/DataTable";
-// import { ColumnDef } from "@tanstack/react-table";
-// import React from "react";
-// import PageTitle from "@/components/PageTitle";
-
-// type Props = {};
-// type Payment = {
-//   name: string;
-//   email: string;
-//   lastOrder: string;
-//   method: string;
-// };
-
-// const columns: ColumnDef<Payment>[] = [
-//   {
-//     accessorKey: "name",
-//     header: "Name",
-//     cell: ({ row }) => {
-//       return (
-//         <div className="flex gap-2 items-center">
-//           <img
-//             className="h-10 w-10"
-//             src={`https://api.dicebear.com/7.x/lorelei/svg?seed=${row.getValue(
-//               "name"
-//             )}`}
-//             alt="user-image"
-//           />
-//           <p>{row.getValue("name")} </p>
-//         </div>
-//       );
-//     }
-//   },
-//   {
-//     accessorKey: "email",
-//     header: "Email"
-//   },
-//   {
-//     accessorKey: "lastOrder",
-//     header: "Last Order"
-//   },
-//   {
-//     accessorKey: "method",
-//     header: "Method"
-//   }
-// ];
-
-// const data: Payment[] = [
-//   {
-//     name: "John Doe",
-//     email: "john@example.com",
-//     lastOrder: "2023-01-01",
-//     method: "Credit Card"
-//   },
-//   {
-//     name: "Alice Smith",
-//     email: "alice@example.com",
-//     lastOrder: "2023-02-15",
-//     method: "PayPal"
-//   },
-//   {
-//     name: "Bob Johnson",
-//     email: "bob@example.com",
-//     lastOrder: "2023-03-20",
-//     method: "Stripe"
-//   },
-//   {
-//     name: "Emma Brown",
-//     email: "emma@example.com",
-//     lastOrder: "2023-04-10",
-//     method: "Venmo"
-//   },
-//   {
-//     name: "Michael Davis",
-//     email: "michael@example.com",
-//     lastOrder: "2023-05-05",
-//     method: "Cash"
-//   },
-//   {
-//     name: "Sophia Wilson",
-//     email: "sophia@example.com",
-//     lastOrder: "2023-06-18",
-//     method: "Bank Transfer"
-//   },
-//   {
-//     name: "Liam Garcia",
-//     email: "liam@example.com",
-//     lastOrder: "2023-07-22",
-//     method: "Payoneer"
-//   },
-//   {
-//     name: "Olivia Martinez",
-//     email: "olivia@example.com",
-//     lastOrder: "2023-08-30",
-//     method: "Apple Pay"
-//   },
-//   {
-//     name: "Noah Rodriguez",
-//     email: "noah@example.com",
-//     lastOrder: "2023-09-12",
-//     method: "Google Pay"
-//   },
-//   {
-//     name: "Ava Lopez",
-//     email: "ava@example.com",
-//     lastOrder: "2023-10-25",
-//     method: "Cryptocurrency"
-//   },
-//   {
-//     name: "Elijah Hernandez",
-//     email: "elijah@example.com",
-//     lastOrder: "2023-11-05",
-//     method: "Alipay"
-//   },
-//   {
-//     name: "Mia Gonzalez",
-//     email: "mia@example.com",
-//     lastOrder: "2023-12-08",
-//     method: "WeChat Pay"
-//   },
-//   {
-//     name: "James Perez",
-//     email: "james@example.com",
-//     lastOrder: "2024-01-18",
-//     method: "Square Cash"
-//   },
-//   {
-//     name: "Charlotte Carter",
-//     email: "charlotte@example.com",
-//     lastOrder: "2024-02-22",
-//     method: "Zelle"
-//   },
-//   {
-//     name: "Benjamin Taylor",
-//     email: "benjamin@example.com",
-//     lastOrder: "2024-03-30",
-//     method: "Stripe"
-//   }
-// ];
-
-// export default function UsersPage({}: Props) {
-//   return (
-//     <div className="flex flex-col gap-5  w-full">
-//       <PageTitle title="Users" />
-//       <DataTable columns={columns} data={data} />
-//     </div>
-//   );
-// }
-/** @format */
-
 "use client";
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
-import React, { useState } from "react";
-import PageTitle from "@/components/PageTitle";
-import { DataTable } from "@/components/DataTable";
-import { ColumnDef } from "@tanstack/react-table";
-
-// Define the User type
-type User = {
-  id: number;
-  username: string;
-  email: string;
-  role: string;
-  lastLogin: string;
-  modepasses: string; // Example of historical information
-};
-
-// Sample initial data
-const initialData: User[] = [
-  { id: 1, username: "admin", email: "admin@example.com", role: "Admin", lastLogin: "2024-08-20", modepasses: "Passed: 10, Failed: 2" },
-  { id: 2, username: "assistant", email: "assistant@example.com", role: "Assistant", lastLogin: "2024-08-19", modepasses: "Passed: 5, Failed: 1" },
-  // Add more sample users here
-];
-
-export default function UsersComponent() {
-  const [data, setData] = useState<User[]>(initialData);
+const Dashboard = () => {
+  const [users, setUsers] = useState<User[]>([]);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [newUser, setNewUser] = useState<User | null>(null);
 
-  // Define columns for the DataTable
-  const columns: ColumnDef<User>[] = [
-    {
-      accessorKey: "username",
-      header: "Username",
-    },
-    {
-      accessorKey: "email",
-      header: "Email",
-    },
-    {
-      accessorKey: "role",
-      header: "Role",
-    },
-    {
-      accessorKey: "lastLogin",
-      header: "Last Login",
-    },
-    {
-      accessorKey: "modepasses",
-      header: "Modepasses",
-    },
-    {
-      id: "actions",
-      header: "Actions",
-      cell: ({ row }) => {
-        const { id } = row.original;
-        return (
-          <div className="flex gap-2">
-            <button
-              className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-              onClick={() => handleEdit(row.original)}
-            >
-              Edit
-            </button>
-            <button
-              className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-              onClick={() => handleDelete(id)}
-            >
-              Delete
-            </button>
-          </div>
-        );
-      },
-    },
-  ];
+  interface User {
+    _id?: string;
+    username: string;
+    email: string;
+    role: string;
+    password: string;
+  }
 
-  // Handle adding a new user
-  const handleAddNew = () => {
-    setEditingUser({ id: 0, username: "", email: "", role: "Assistant", lastLogin: "", modepasses: "" });
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await axios.get('http://localhost:3002/users');
+        setUsers(response.data);
+      } catch (error) {
+        console.error('Erreur lors de la récupération des utilisateurs!', error);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  const handleDelete = (id: string) => {
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) {
+      axios.delete(`http://localhost:3002/users/${id}`)
+        .then(() => {
+          setUsers((prevUsers) => prevUsers.filter((user) => user._id !== id));
+          alert('Utilisateur supprimé avec succès');
+        })
+        .catch((error) => {
+          console.error('Erreur lors de la suppression de l\'utilisateur', error);
+        });
+    }
   };
 
-  // Handle editing an existing user
+  const handleSubmit = (user: User) => {
+    if (user._id) {
+      axios.put(`http://localhost:3002/users/${user._id}`, user)
+        .then((response) => {
+          setUsers((prevUsers) => prevUsers.map((u) => (u._id === user._id ? response.data : u)));
+          setEditingUser(null);
+        })
+        .catch((error) => {
+          console.error('Erreur lors de la mise à jour de l\'utilisateur', error);
+        });
+    } else {
+      axios.post('http://localhost:3002/users', user)
+        .then((response) => {
+          setUsers((prevUsers) => [...prevUsers, response.data]);
+          setNewUser(null);
+        })
+        .catch((error) => {
+          console.error('Erreur lors de la création de l\'utilisateur', error);
+        });
+    }
+  };
+
+  const handleAddNew = () => {
+    setNewUser({ username: '', email: '', role: '', password: '' });
+  };
+
   const handleEdit = (user: User) => {
     setEditingUser(user);
   };
 
-  // Handle deleting a user
-  const handleDelete = (id: number) => {
-    setData((prevData) => prevData.filter((user) => user.id !== id));
-  };
-
-  // Handle saving changes to a user
-  const handleSave = (updatedUser: User) => {
-    if (updatedUser.id) {
-      setData((prevData) =>
-        prevData.map((user) =>
-          user.id === updatedUser.id ? updatedUser : user
-        )
-      );
-    } else {
-      setData((prevData) => [
-        ...prevData,
-        { ...updatedUser, id: prevData.length + 1 },
-      ]);
-    }
-    setEditingUser(null);
-  };
-
   return (
-    <div className="flex flex-col gap-5 w-full">
-      <PageTitle title="Users" />
+    <div className="flex flex-col gap-5 w-full p-6">
+      <h1 className="text-3xl font-bold mb-4"> USER</h1>
+
       <button
-        onClick={handleAddNew}
         className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 self-end"
+        onClick={handleAddNew}
       >
         Add User
       </button>
-      <DataTable columns={columns} data={data} />
-      {editingUser && (
-        <EditForm
-          user={editingUser}
-          onSave={handleSave}
-          onCancel={() => setEditingUser(null)}
-        />
+
+      <div className="overflow-x-auto">
+        <table className="min-w-full bg-white border border-gray-300 shadow-md rounded-lg">
+          <thead>
+            <tr className="bg-gray-100 text-left text-sm font-medium text-gray-700 uppercase">
+              <th className="px-4 py-2 border">User name</th>
+              <th className="px-4 py-2 border">Email</th>
+              <th className="px-4 py-2 border">Role</th>
+              <th className="px-4 py-2 border">Password</th>
+              <th className="px-4 py-2 border">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {users.length > 0 ? (
+              users.map((user) => (
+                <tr key={user._id} className="hover:bg-gray-50">
+                  <td className="px-4 py-2 border">{user.username}</td>
+                  <td className="px-4 py-2 border">{user.email}</td>
+                  <td className="px-4 py-2 border">{user.role}</td>
+                  <td className="px-4 py-2 border truncate max-w-xs">{user.password}</td>
+                  <td className="px-4 py-2 border flex gap-2">
+                    <button
+                      className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 text-sm"
+                      onClick={() => handleEdit(user)}
+                    >
+                      Modifier
+                    </button>
+                    <button
+                      className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm"
+                      onClick={() => handleDelete(user._id!)}
+                    >
+                      Supprimer
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={5} className="text-center px-4 py-2">
+                  Aucun utilisateur trouvé.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {(editingUser || newUser) && (
+        <div className="mt-6">
+          <h2 className="text-2xl font-bold mb-4">
+            {editingUser ? `Modifier l'utilisateur` : 'Ajouter un nouvel utilisateur'}
+          </h2>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSubmit(editingUser || newUser!);
+            }}
+          >
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700">Nom d'utilisateur</label>
+              <input
+                type="text"
+                value={(editingUser || newUser)?.username}
+                onChange={(e) => {
+                  const updatedUser = { ...(editingUser || newUser)!, username: e.target.value };
+                  editingUser ? setEditingUser(updatedUser) : setNewUser(updatedUser);
+                }}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700">Email</label>
+              <input
+                type="email"
+                value={(editingUser || newUser)?.email}
+                onChange={(e) => {
+                  const updatedUser = { ...(editingUser || newUser)!, email: e.target.value };
+                  editingUser ? setEditingUser(updatedUser) : setNewUser(updatedUser);
+                }}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700">Rôle</label>
+              <input
+                type="text"
+                value={(editingUser || newUser)?.role}
+                onChange={(e) => {
+                  const updatedUser = { ...(editingUser || newUser)!, role: e.target.value };
+                  editingUser ? setEditingUser(updatedUser) : setNewUser(updatedUser);
+                }}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700">Mot de passe</label>
+              <input
+                type="password"
+                value={(editingUser || newUser)?.password}
+                onChange={(e) => {
+                  const updatedUser = { ...(editingUser || newUser)!, password: e.target.value };
+                  editingUser ? setEditingUser(updatedUser) : setNewUser(updatedUser);
+                }}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              />
+            </div>
+
+            <div className="flex gap-4">
+              <button
+                type="submit"
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                {editingUser ? 'Mettre à jour' : 'Ajouter'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingUser(null);
+                  setNewUser(null);
+                }}
+                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+              >
+                Annuler
+              </button>
+            </div>
+          </form>
+        </div>
       )}
     </div>
   );
-}
-
-// Define props for the EditForm component
-type EditFormProps = {
-  user: User;
-  onSave: (updatedUser: User) => void;
-  onCancel: () => void;
 };
 
-// Define the EditForm component
-function EditForm({ user, onSave, onCancel }: EditFormProps) {
-  const [formData, setFormData] = useState<User>({ ...user });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData((prevData) => ({ ...prevData, [name]: value }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSave(formData);
-  };
-
-  return (
-    <form className="p-4 bg-gray-100 rounded-lg" onSubmit={handleSubmit}>
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700">Username</label>
-        <input
-          type="text"
-          name="username"
-          value={formData.username}
-          onChange={handleChange}
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-        />
-      </div>
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700">Email</label>
-        <input
-          type="email"
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-        />
-      </div>
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700">Role</label>
-        <select
-          name="role"
-          value={formData.role}
-          onChange={handleChange}
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-        >
-          <option value="Admin">Admin</option>
-          <option value="Assistant">Assistant</option>
-          {/* Add other roles if necessary */}
-        </select>
-      </div>
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700">Last Login</label>
-        <input
-          type="date"
-          name="lastLogin"
-          value={formData.lastLogin}
-          onChange={handleChange}
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-        />
-      </div>
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700">Modepasses</label>
-        <input
-          type="text"
-          name="modepasses"
-          value={formData.modepasses}
-          onChange={handleChange}
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-        />
-      </div>
-      <div className="flex gap-4">
-        <button
-          type="submit"
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Save
-        </button>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-        >
-          Cancel
-        </button>
-      </div>
-    </form>
-  );
-}
+export default Dashboard;

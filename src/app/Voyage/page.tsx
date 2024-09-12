@@ -7,7 +7,7 @@ import { DataTable } from '@/components/DataTable';
 import { ColumnDef } from '@tanstack/react-table';
 
 type Voyage = {
-  _id: string;
+  id: string;
   type: string;
   destination: string;
   price?: string;
@@ -34,21 +34,24 @@ const VoyageComponent = () => {
 
   const handleSave = async (voyage: Voyage) => {
     try {
-      if (voyage._id) {
-        await axios.put(`http://localhost:3002/voyages/${voyage._id}`, voyage);
+     
+      if (voyage.id) {
+        await axios.put(`http://localhost:3002/voyages/${voyage.id}`, voyage);
       } else {
-        await axios.post('http://localhost:3002/voyages', voyage);
+        await axios.post('http://localhost:3002/voyages',voyage );
       }
       loadVoyages();
       setEditingVoyage(null);
     } catch (error) {
-      console.error('Error saving voyage', error);
+      console.error('Error saving voyage');
     }
   };
+    
+  
 
   const handleAddNew = () => {
     setEditingVoyage({
-      _id: '',
+      id: '',
       type: '',
       destination: '',
       price: '',
@@ -108,7 +111,7 @@ const VoyageComponent = () => {
             Edit
           </button>
           <button
-            onClick={() => handleDelete(row.original._id)}
+            onClick={() => handleDelete(row.original.id)}
             className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
           >
             Delete

@@ -4,7 +4,7 @@ import { useState, ChangeEvent, FormEvent } from 'react'
 
 // ** Next Imports
 import Link from 'next/link'
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/navigation'
 import { isEmail, isLength } from 'validator'
 
 import getConfig from 'next/config'
@@ -23,11 +23,12 @@ import FormControl from '@mui/material/FormControl'
 import { styled, useTheme } from '@mui/material/styles'
 import MuiCard from '@mui/material/Card'
 import MuiFormControlLabel from '@mui/material/FormControlLabel'
-
+import { useContext } from 'react';
 
 
 // ** Layout Import
 import BlankLayout from  "@/components/ui/BlankLayout";
+import { UserContext } from '@/contexte/usercontexte';
 
 
 
@@ -52,14 +53,14 @@ const FormControlLabel = styled(MuiFormControlLabel)(({ theme }) => ({
 const LoginPage = () => {
   const [emailError, setEmailError] = useState<string>('')
   const [passwordError, setPasswordError] = useState<string>('')
-
+ const router=useRouter()
   const [email, setEmail] = useState<string>('')
   const [password, setPassword] = useState<string>('')
   
   const [error, setError] = useState<string>('')
 
- 
-
+ const {loadMe,activeProfile}=useContext(UserContext)
+ console.log(activeProfile)
   const validateFields = (): boolean => {
     let isValid = true
 
@@ -86,13 +87,47 @@ const LoginPage = () => {
 
     return isValid
   }
-
+  const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    
+    // Appel de validateFields pour vérifier si les champs sont valides
+    if (!validateFields()) {
+      return; // Si les champs ne sont pas valides, on arrête l'exécution
+    }
+  
+    
+      const response = await fetch('http://localhost:3002/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+      });
+  console.log(response);
+      
+    
+  
+      const data = await response.json();
+      const token = data.access_token;
+      console.log(token);
+      if (token) {
+      // Store the token in localStorage
+      localStorage.setItem('token', token);
+      loadMe(token);
+      // Redirect to the dashboard
+      router.push('/Home');
+    } else {
+      
+      setError( 'Login failed');
+    }
+  };
   return (
+    
     <Box className='content-center'>
       <Card sx={{ zIndex: 1 }}>
         <CardContent sx={{ padding: theme => `${theme.spacing(12, 9, 7)} !important` }}>
           <Box sx={{ mb: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <img src={`/images/logos/idlynx_logo.svg`} alt='logo' style={{ width: '30%', height: 'auto' }} />
+            <img src={`assets/erislogo.jpeg`} alt='logo' style={{ width: '30%', height: 'auto' }} />
           </Box>
           <Box sx={{ mb: 6 }}>
             <Typography variant='h5' sx={{ fontWeight: 600, marginBottom: 1.5 }}>
@@ -101,7 +136,7 @@ const LoginPage = () => {
             <Typography variant='body2'>Please sign-in to your account and start the adventure</Typography>
           </Box>
 
-          <form noValidate autoComplete='off' >
+          <form noValidate autoComplete='off' onSubmit={handleLogin} >
             <TextField
               required
               autoFocus

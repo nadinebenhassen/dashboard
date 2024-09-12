@@ -5,15 +5,19 @@ import axios from 'axios';
 import PageTitle from '@/components/PageTitle';
 import { DataTable } from '@/components/DataTable';
 import { ColumnDef } from '@tanstack/react-table';
-import { deleteHotel, getHotelByName } from '@/services/hotelService';
+import { createHotel, deleteHotel, getHotelByName, updateHotel } from '@/services/hotelService';
 
 type Hotel = {
-  id: string;
+  _id?: string;
   title: string;
   location: string;
-  price: string;
-  description: string;
   image: string;
+  price: string;
+  link: string;
+  category: 'national' | 'international';
+  images?: string[];
+  accommodation?: string;
+  services?: string[];
 };
 
 const HotelComponent = () => {
@@ -26,37 +30,43 @@ const HotelComponent = () => {
 
   const loadHotels = async () => {
     try {
-      const response = await axios.get('http://localhost:3002/hotels'); // Adjust endpoint as necessary
+      const response = await axios.get('http://localhost:3002/hotels');
       setData(response.data);
     } catch (error) {
       console.error('Error loading hotels', error);
     }
   };
-console.log(data)
   const handleSave = async (hotel: Hotel) => {
     try {
-      if (hotel.id) {
-        // Update existing hotel
-        await axios.put(`http://localhost:3002/hotels/${hotel.id}`, hotel);
+      if (hotel._id) {
+        await updateHotel(hotel);
       } else {
-        // Add new hotel
-        await axios.post('http://localhost:3002/hotels', hotel);
+        await createHotel(hotel);
       }
-      loadHotels(); // Reload data after save
+      loadHotels();
       setEditingHotel(null);
     } catch (error) {
-      console.error('Error saving hotel', error);
+      if (axios.isAxiosError(error)) {
+        console.error('Error saving hotel:', error.response?.data || error.message);
+      } else {
+        console.error('Unexpected error:', error);
+      }
     }
   };
+  
+  
 
   const handleAddNew = () => {
     setEditingHotel({
-      id: '',
       title: '',
       location: '',
-      price: '',
-      description: '',
       image: '',
+      price: '',
+      link: '',
+      category: 'national',
+      images: [],
+      accommodation: '',
+      services: [],
     });
   };
 
@@ -64,27 +74,16 @@ console.log(data)
     setEditingHotel(hotel);
   };
 
-  const handleDelete = async (hotelname: string) => {
-   
+  const handleDelete = async (hotelId: string) => {
     try {
-      // Supposons que vous ayez une fonction pour récupérer un hôtel par son nom
-      const hotel = await getHotelByName(hotelname);
-  
-      if (hotel && hotel.title) {
-        // Suppression de l'hôtel via son ID
-        await deleteHotel(hotel.title);
-        console.log("Hotel deleted successfully");
-        // Vous pouvez mettre à jour l'interface utilisateur ici, par exemple
-      } else {
-        console.log("Hotel not found");
-      }
+      // Call deleteHotel directly with the ID
+      await deleteHotel(hotelId);
+      console.log('Hotel deleted successfully');
+      loadHotels();
     } catch (error) {
-      console.error("Error deleting hotel:", error);
+      console.error('Error deleting hotel:', error);
     }
   };
-  
-  
-
   const columns: ColumnDef<Hotel>[] = [
     {
       accessorKey: 'title',
@@ -102,36 +101,43 @@ console.log(data)
       cell: (info) => info.getValue(),
     },
     {
-      accessorKey: 'description',
-      header: 'Description',
-      cell: (info) => info.getValue(),
-    },
-    {
       accessorKey: 'image',
       header: 'Image',
-      cell: (info) => <img src='{info.getValue()} 'alt="Hotel" className="h-10 w-10" />,
+      cell: (info) => <img src={info.getValue() as string} alt="Hotel" className="h-10 w-10" />,
     },
     {
       id: 'actions',
       header: 'Actions',
-      cell: ({ row }) => (
-        <div className="flex gap-2">
-          <button
-            onClick={() => handleEdit(row.original)}
-            className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
-            Edit
-          </button>
-          <button
-            onClick={() => handleDelete(row.getValue('title'))}
-            className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-          >
-            Delete
-          </button>
-        </div>
-      ),
+      cell: ({ row }) => {
+        const hotel = row.original;
+        return (
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleEdit(hotel)}
+              className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Edit
+            </button>
+            <button
+              onClick={() => {
+                const hotelId = hotel._id;
+                if (hotelId) {
+                  handleDelete(hotelId);
+                } else {
+                  console.error('Hotel ID is missing');
+                }
+              }}
+              className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+            >
+              Delete
+            </button>
+          </div>
+        );
+      },
     },
   ];
+  
+  
 
   return (
     <div className="flex flex-col gap-5 w-full">
@@ -163,7 +169,7 @@ type EditFormProps = {
 const EditForm = ({ hotel, onSave, onCancel }: EditFormProps) => {
   const [formData, setFormData] = useState<Hotel>(hotel);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
@@ -177,72 +183,103 @@ const EditForm = ({ hotel, onSave, onCancel }: EditFormProps) => {
 
   return (
     <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow-md">
-      <div className="mb-4">
-        <label htmlFor="title" className="block text-gray-700 text-sm font-bold mb-2">Title</label>
-        <input
-          type="text"
-          name="title"
-          value={formData.title}
-          onChange={handleChange}
-          className="border rounded w-full py-2 px-3"
-          required
-        />
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Title</label>
+          <input
+            type="text"
+            name="title"
+            value={formData.title}
+            onChange={handleChange}
+            className="mt-1 p-2 w-full border rounded"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Location</label>
+          <input
+            type="text"
+            name="location"
+            value={formData.location}
+            onChange={handleChange}
+            className="mt-1 p-2 w-full border rounded"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Price</label>
+          <input
+            type="text"
+            name="price"
+            value={formData.price}
+            onChange={handleChange}
+            className="mt-1 p-2 w-full border rounded"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Image URL</label>
+          <input
+            type="text"
+            name="image"
+            value={formData.image}
+            onChange={handleChange}
+            className="mt-1 p-2 w-full border rounded"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Link</label>
+          <input
+            type="text"
+            name="link"
+            value={formData.link}
+            onChange={handleChange}
+            className="mt-1 p-2 w-full border rounded"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Category</label>
+          <select
+            name="category"
+            value={formData.category}
+            onChange={handleChange}
+            className="mt-1 p-2 w-full border rounded"
+          >
+            <option value="national">National</option>
+            <option value="international">International</option>
+          </select>
+        </div>
+        <div className="col-span-2">
+          <label className="block text-sm font-medium text-gray-700">Accommodation</label>
+          <input
+            type="text"
+            name="accommodation"
+            value={formData.accommodation || ''}
+            onChange={handleChange}
+            className="mt-1 p-2 w-full border rounded"
+          />
+        </div>
+        <div className="col-span-2">
+          <label className="block text-sm font-medium text-gray-700">Services</label>
+          <textarea
+            name="services"
+            value={formData.services?.join(', ') || ''}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                services: e.target.value.split(',').map((service) => service.trim()),
+              })
+            }
+            className="mt-1 p-2 w-full border rounded"
+          />
+        </div>
       </div>
-      <div className="mb-4">
-        <label htmlFor="location" className="block text-gray-700 text-sm font-bold mb-2">Location</label>
-        <input
-          type="text"
-          name="location"
-          value={formData.location}
-          onChange={handleChange}
-          className="border rounded w-full py-2 px-3"
-          required
-        />
-      </div>
-      <div className="mb-4">
-        <label htmlFor="price" className="block text-gray-700 text-sm font-bold mb-2">Price</label>
-        <input
-          type="text"
-          name="price"
-          value={formData.price}
-          onChange={handleChange}
-          className="border rounded w-full py-2 px-3"
-          required
-        />
-      </div>
-      <div className="mb-4">
-        <label htmlFor="description" className="block text-gray-700 text-sm font-bold mb-2">Description</label>
-        <textarea
-          name="description"
-          value={formData.description}
-          onChange={handleChange}
-          className="border rounded w-full py-2 px-3"
-          required
-        />
-      </div>
-      <div className="mb-4">
-        <label htmlFor="image" className="block text-gray-700 text-sm font-bold mb-2">Image URL</label>
-        <input
-          type="text"
-          name="image"
-          value={formData.image}
-          onChange={handleChange}
-          className="border rounded w-full py-2 px-3"
-          required
-        />
-      </div>
-      <div className="flex justify-end gap-2">
+      <div className="mt-4 flex justify-end gap-3">
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+          className="px-4 py-2 bg-gray-300 text-black rounded"
         >
           Cancel
         </button>
-        <button
-          type="submit"
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
+        <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded">
           Save
         </button>
       </div>

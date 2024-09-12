@@ -1,19 +1,24 @@
 // services/hotelService.ts
 import axios from 'axios';
-import { LucideArrowDownRight } from 'lucide-react';
+
 
 const API_URL = 'http://localhost:3002/Hotels';
-export type Hotel = {
-    id: string;
-    title: string;
-    location: string;
-    price: string;
-    description: string;
-    image: string;
-  };
+
+type Hotel = {
+  _id?: string;
+  title: string;
+  location: string;
+  image: string;
+  price: string;
+  link: string;
+  category: 'national' | 'international';
+  images?: string[];
+  accommodation?: string;
+  services?: string[];
+};
 export const getHotels = async () => {
   const response = await axios.get(API_URL);
-  return (response).data;
+  return response.data;
 };
 
 export const getHotelById = async (id: string) => {
@@ -27,15 +32,15 @@ export const createHotel = async (hotel: Hotel) => {
 };
 
 export const updateHotel = async (hotel: Hotel) => {
-  const response = await axios.put(`${API_URL}/${hotel.id}`, hotel);
+  const response = await axios.put(`${API_URL}/${hotel._id}`, hotel);
   return response.data;
 };
 
-export const deleteHotel = async (title: string) => {
-  await axios.delete(`${API_URL}/title/${title}`);
-
-  
+export const deleteHotel = async (id: string) => {
+  await axios.delete(`${API_URL}/${id}`);
 };
+
+
 export const getHotelByName = async (hotelname: string): Promise<Hotel | null> => {
   try {
     const response = await axios.get(`${API_URL}/title/${hotelname}`);
